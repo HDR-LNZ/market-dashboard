@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Markets">
+<meta name="theme-color" content="#0a0e17">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Market Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0e17;
+    color: #d1d4dc;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  header {
+    background: #131722;
+    border-bottom: 1px solid #1e222d;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  #clock {
+    font-size: 12px;
+    color: #787b86;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .dashboard {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .panel {
+    background: #131722;
+    border: 1px solid #1e222d;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid #1e222d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-header h2 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #787b86;
+  }
+
+  .panel-header .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #26a69a;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .panel-body {
+    padding: 0;
+    min-height: 300px;
+  }
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
+
+  .ticker-tape {
+    grid-column: 1 / -1;
+  }
+
+  .tradingview-widget-container { width: 100% !important; }
+
+  /* Pull-to-refresh indicator */
+  .refresh-hint {
+    text-align: center;
+    padding: 8px;
+    font-size: 11px;
+    color: #787b86;
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .dashboard {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 8px;
+    }
+
+    header h1 { font-size: 16px; }
+    #clock { font-size: 11px; }
+
+    .panel-body { min-height: 280px; }
+  }
+
+  @media (max-width: 400px) {
+    header { padding: 10px 12px; }
+    .panel-header { padding: 8px 12px; }
+    .panel-header h2 { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Market Dashboard</h1>
+  <div id="clock"></div>
+</header>
+
+<!-- Ticker Tape -->
+<div class="ticker-tape">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
+        {"proName": "FOREXCOM:NSXUSD", "title": "Nasdaq 100"},
+        {"proName": "FOREXCOM:DJI", "title": "Dow Jones"},
+        {"proName": "TVC:USOIL", "title": "WTI Crude"},
+        {"proName": "TVC:GOLD", "title": "Gold"},
+        {"proName": "TVC:DXY", "title": "US Dollar"},
+        {"proName": "TVC:US10Y", "title": "10Y Yield"},
+        {"proName": "CAPITALCOM:VIX", "title": "VIX"},
+        {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"},
+        {"proName": "FX:EURUSD", "title": "EUR/USD"},
+        {"proName": "TVC:SILVER", "title": "Silver"},
+        {"proName": "TVC:UKOIL", "title": "Brent Crude"},
+        {"proName": "FX:USDJPY", "title": "USD/JPY"},
+        {"proName": "BITSTAMP:ETHUSD", "title": "Ethereum"}
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": true,
+      "displayMode": "adaptive",
+      "colorTheme": "dark",
+      "locale": "en"
+    }
+    </script>
+  </div>
+</div>
+
+<div class="dashboard">
+
+  <!-- Index Futures -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>Indices</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+        {
+          "width": "100%",
+          "height": "300",
+          "symbolsGroups": [
+            {
+              "name": "Indices",
+              "symbols": [
+                {"name": "FOREXCOM:SPXUSD", "displayName": "S&P 500"},
+                {"name": "FOREXCOM:NSXUSD", "displayName": "Nasdaq 100"},
+                {"name": "FOREXCOM:DJI", "displayName": "Dow Jones"},
+                {"name": "PEPPERSTONE:US2000", "displayName": "Russell 2000"},
+                {"name": "PEPPERSTONE:GER40", "displayName": "DAX 40"},
+                {"name": "OANDA:UK100GBP", "displayName": "FTSE 100"}
+              ]
+            }
+          ],
+          "showSymbolLogo": true,
+          "isTransparent": true,
+          "colorTheme": "dark",
+          "locale": "en"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commodities -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>Commodities</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+        {
+          "width": "100%",
+          "height": "300",
+          "symbolsGroups": [
+            {
+              "name": "Energy & Metals",
+              "symbols": [
+                {"name": "TVC:USOIL", "displayName": "WTI Crude Oil"},
+                {"name": "TVC:UKOIL", "displayName": "Brent Crude"},
+                {"name": "PEPPERSTONE:NATGAS", "displayName": "Natural Gas"},
+                {"name": "TVC:GOLD", "displayName": "Gold"},
+                {"name": "TVC:SILVER", "displayName": "Silver"},
+                {"name": "PEPPERSTONE:COPPER", "displayName": "Copper"}
+              ]
+            }
+          ],
+          "showSymbolLogo": true,
+          "isTransparent": true,
+          "colorTheme": "dark",
+          "locale": "en"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- S&P 500 Chart -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>S&P 500</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {
+          "symbol": "FOREXCOM:SPXUSD",
+          "width": "100%",
+          "height": "300",
+          "locale": "en",
+          "dateRange": "1D",
+          "colorTheme": "dark",
+          "isTransparent": true,
+          "autosize": false,
+          "largeChartUrl": ""
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- WTI Crude Chart -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>WTI Crude Oil</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {
+          "symbol": "TVC:USOIL",
+          "width": "100%",
+          "height": "300",
+          "locale": "en",
+          "dateRange": "1D",
+          "colorTheme": "dark",
+          "isTransparent": true,
+          "autosize": false,
+          "largeChartUrl": ""
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gold Chart -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>Gold</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {
+          "symbol": "TVC:GOLD",
+          "width": "100%",
+          "height": "300",
+          "locale": "en",
+          "dateRange": "1D",
+          "colorTheme": "dark",
+          "isTransparent": true,
+          "autosize": false,
+          "largeChartUrl": ""
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIX Chart -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>VIX (Volatility)</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+        {
+          "symbol": "CAPITALCOM:VIX",
+          "width": "100%",
+          "height": "300",
+          "locale": "en",
+          "dateRange": "1D",
+          "colorTheme": "dark",
+          "isTransparent": true,
+          "autosize": false,
+          "largeChartUrl": ""
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Currencies & Bonds -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>Currencies & Bonds</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+        {
+          "width": "100%",
+          "height": "300",
+          "symbolsGroups": [
+            {
+              "name": "FX & Rates",
+              "symbols": [
+                {"name": "TVC:DXY", "displayName": "US Dollar Index"},
+                {"name": "FX:EURUSD", "displayName": "EUR/USD"},
+                {"name": "FX:USDJPY", "displayName": "USD/JPY"},
+                {"name": "FX:GBPUSD", "displayName": "GBP/USD"},
+                {"name": "TVC:US10Y", "displayName": "US 10Y Yield"},
+                {"name": "TVC:US02Y", "displayName": "US 2Y Yield"}
+              ]
+            }
+          ],
+          "showSymbolLogo": true,
+          "isTransparent": true,
+          "colorTheme": "dark",
+          "locale": "en"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crypto & Volatility -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>Crypto & Volatility</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js" async>
+        {
+          "width": "100%",
+          "height": "300",
+          "symbolsGroups": [
+            {
+              "name": "Crypto & Vol",
+              "symbols": [
+                {"name": "BITSTAMP:BTCUSD", "displayName": "Bitcoin"},
+                {"name": "BITSTAMP:ETHUSD", "displayName": "Ethereum"},
+                {"name": "COINBASE:SOLUSD", "displayName": "Solana"},
+                {"name": "CAPITALCOM:VIX", "displayName": "VIX"},
+                {"name": "FOREXCOM:SPXUSD", "displayName": "S&P 500"}
+              ]
+            }
+          ],
+          "showSymbolLogo": true,
+          "isTransparent": true,
+          "colorTheme": "dark",
+          "locale": "en"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Economic Calendar -->
+  <div class="panel full-width">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>Economic Calendar</h2>
+    </div>
+    <div class="panel-body">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+        {
+          "colorTheme": "dark",
+          "isTransparent": true,
+          "width": "100%",
+          "height": "300",
+          "locale": "en",
+          "importanceFilter": "0,1",
+          "countryFilter": "us"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heatmap -->
+  <div class="panel full-width">
+    <div class="panel-header">
+      <div class="dot"></div>
+      <h2>S&P 500 Heatmap</h2>
+    </div>
+    <div class="panel-body" style="min-height:500px;">
+      <div class="tradingview-widget-container" style="height:500px;">
+        <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+        {
+          "exchanges": [],
+          "dataSource": "SPX500",
+          "grouping": "sector",
+          "blockSize": "market_cap_basic",
+          "blockColor": "change",
+          "locale": "en",
+          "symbolUrl": "",
+          "colorTheme": "dark",
+          "hasTopBar": true,
+          "isDataSetEnabled": true,
+          "isZoomEnabled": true,
+          "hasSymbolTooltip": true,
+          "isMonoSize": false,
+          "width": "100%",
+          "height": "100%"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function updateClock() {
+    const now = new Date();
+    const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+    const local = now.toLocaleString('en-US', options);
+    const nyTime = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: true });
+    document.getElementById('clock').textContent = `${local} · NY: ${nyTime}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+
+</body>
+</html>
