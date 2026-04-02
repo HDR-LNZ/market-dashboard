@@ -1,10 +1,10 @@
 const CACHE_NAME = 'market-dashboard-v1';
 const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/market-dashboard/',
+  '/market-dashboard/index.html',
+  '/market-dashboard/manifest.json',
+  '/market-dashboard/icon-192.png',
+  '/market-dashboard/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
