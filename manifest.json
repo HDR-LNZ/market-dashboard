@@ -2,7 +2,7 @@
   "name": "Market Dashboard",
   "short_name": "Markets",
   "description": "Live market dashboard with indices, commodities, currencies, and crypto",
-  "start_url": "/",
+  "start_url": "/market-dashboard/",
   "display": "standalone",
   "background_color": "#0a0e17",
   "theme_color": "#0a0e17",
